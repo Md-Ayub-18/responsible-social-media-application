@@ -3,35 +3,40 @@ AI-generated text detector.
 
 Two signals:
 1. HF model: `openai-community/roberta-base-openai-detector` — trained on GPT-2 outputs.
-2. Heuristics: LLM-typical markers (uniform sentence length, specific phrases, low burstiness).
+2. Heuristics: LLM-typical markers (specific phrases).
 
-Combined into a single confidence score.
+Combined into a single confidence score with conservative thresholds to
+avoid false positives on normal writing.
 """
 
+import logging
 import re
 from functools import lru_cache
 
 from transformers import pipeline
 
+# Silence the "Some weights were not used" HuggingFace warning on every load.
+logging.getLogger("transformers").setLevel(logging.ERROR)
 
-# Common LLM stock phrases — weak signal each, but together they add up
+
+# Strong signals — phrases that appear in AI writing but rarely in human writing.
 LLM_MARKERS = [
     r"\bas an ai\b",
     r"\bit('s| is) important to note\b",
-    r"\bin conclusion\b",
-    r"\bfurthermore,?\b",
-    r"\bmoreover,?\b",
-    r"\bhowever,? it('s| is) worth\b",
     r"\bdelve into\b",
     r"\bnavigate the complexities\b",
     r"\bin today('s| is) fast-paced world\b",
     r"\bunlock the potential\b",
     r"\btapestry\b",
     r"\bmultifaceted\b",
+    r"\brich tapestry\b",
+    r"\belevate your\b",
+    r"\bembark on a journey\b",
 ]
 
-MODEL_THRESHOLD = 0.85   # HF model confidence required
-HEURISTIC_THRESHOLD = 3  # number of distinct markers required
+MODEL_THRESHOLD = 0.95      # HF model must be very confident to be trusted alone
+STRONG_MODEL_THRESHOLD = 0.98
+HEURISTIC_THRESHOLD = 2     # distinct markers required
 
 
 @lru_cache(maxsize=1)
@@ -77,46 +82,83 @@ def detect(text: str) -> dict:
         {
             "is_ai": bool,
             "confidence": float,        # 0-1
-            "model_label": str,         # "Real" or "Fake" (HF model output)
+            "model_label": str,         # "Real" or "Fake"
             "model_score": float,
             "heuristics": {...},
-            "reasons": [str, ...],      # human-readable reasons
+            "reasons": [str, ...],
         }
     """
+    # Too short for meaningful analysis
     if not text or len(text.strip()) < 40:
-        # Too short for meaningful analysis
         return {
-            "is_ai": False, "confidence": 0.0,
-            "model_label": "unknown", "model_score": 0.0,
-            "heuristics": {}, "reasons": [],
+            "is_ai": False,
+            "confidence": 0.0,
+            "model_label": "unknown",
+            "model_score": 0.0,
+            "heuristics": {},
+            "reasons": [],
         }
 
-    # Model signal
+    # --- Model signal ---
     detector = _get_detector()
     result = detector(text)[0]
-    model_label = result["label"]       # typically "Real" or "Fake"
+    model_label = result["label"]
     model_score = float(result["score"])
 
-    # Heuristic signal
+    # --- Heuristic signal ---
     heur = _heuristic_signals(text)
 
-    # Decide
-    reasons = []
-    model_says_ai = model_label.lower() in ("fake", "ai", "generated") and model_score >= MODEL_THRESHOLD
-    if model_says_ai:
+    # --- Decision logic ---
+        # --- Decision logic ---
+    reasons: list[str] = []
+
+    marker_count = heur["marker_count"]
+
+    model_says_ai = (
+        model_label.lower() in ("fake", "ai", "generated")
+        and model_score >= MODEL_THRESHOLD
+    )
+    strong_model_says_ai = (
+        model_label.lower() in ("fake", "ai", "generated")
+        and model_score >= STRONG_MODEL_THRESHOLD
+    )
+    heuristic_strong = marker_count >= 3
+    heuristic_moderate = marker_count >= 2
+
+    # Flag as AI if:
+    #   (a) 3+ strong heuristic markers alone, OR
+    #   (b) 2+ heuristic markers AND model agrees, OR
+    #   (c) model is extremely confident (>= 0.98) alone
+    is_ai = (
+        heuristic_strong
+        or (heuristic_moderate and model_says_ai)
+        or strong_model_says_ai
+    )
+
+    # Build human-readable reasons
+    if heuristic_strong:
+        reasons.append(f"Multiple LLM-typical phrases detected ({marker_count})")
+    elif heuristic_moderate and model_says_ai:
+        reasons.append(
+            f"LLM-typical phrases ({marker_count}) and AI-detector confidence {model_score:.2f}"
+        )
+    if strong_model_says_ai and not heuristic_moderate:
         reasons.append(f"AI-detector model confidence {model_score:.2f}")
 
-    heuristic_says_ai = heur["marker_count"] >= HEURISTIC_THRESHOLD
-    if heuristic_says_ai:
-        reasons.append(f"LLM-typical phrases detected ({heur['marker_count']})")
-
-    is_ai = model_says_ai or heuristic_says_ai
-    confidence = model_score if model_says_ai else (0.5 + heur["marker_count"] * 0.1 if heuristic_says_ai else 0.0)
-    confidence = min(confidence, 1.0)
+    # Confidence score
+    if heuristic_strong:
+        confidence = min(0.6 + marker_count * 0.08, 0.95)
+    elif strong_model_says_ai:
+        confidence = model_score
+    elif is_ai:
+        confidence = max(model_score, 0.6)
+    else:
+        confidence = 0.0
+    confidence = round(min(confidence, 1.0), 3)
 
     return {
         "is_ai": is_ai,
-        "confidence": round(confidence, 3),
+        "confidence": confidence,
         "model_label": model_label,
         "model_score": round(model_score, 3),
         "heuristics": heur,

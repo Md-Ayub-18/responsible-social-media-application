@@ -42,10 +42,19 @@ class PostService:
         )
         post = await self.posts.create(post)
 
-        # Queue background jobs (fire and forget)
+        # Queue moderation task (always — every post must be moderated)
         from app.workers.tasks import evaluate_bot, moderate_post
         moderate_post.delay(post.id)
-        evaluate_bot.delay(author.id)
+
+        # Bot evaluation: throttled, not on every post.
+        # Run when: author's post count is a multiple of 10, OR
+        #           author has posted > 5 times in the last hour (burst).
+        total_posts = await self.posts.count_all_posts_by_author(author.id)
+        recent_posts = await self.posts.count_recent_posts_by_author(author.id, minutes=60)
+
+        should_evaluate = (total_posts % 10 == 0) or (recent_posts > 5)
+        if should_evaluate:
+            evaluate_bot.delay(author.id)
 
         return post
     

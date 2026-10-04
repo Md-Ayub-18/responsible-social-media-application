@@ -1,10 +1,9 @@
-from sqlalchemy import delete, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.post import Post
-from app.models.user import User
-from sqlalchemy import or_, select
+from sqlalchemy import or_
 
 
 class PostRepository:
@@ -81,3 +80,26 @@ class PostRepository:
     async def delete(self, post: Post) -> None:
         await self.db.delete(post)
         await self.db.commit()
+        
+        
+        
+    async def count_recent_posts_by_author(self, author_id: str, minutes: int = 60) -> int:
+        """Count posts by this author in the last N minutes."""
+        from datetime import datetime, timedelta, timezone
+        cutoff = datetime.now(timezone.utc) - timedelta(minutes=minutes)
+        stmt = (
+            select(func.count())
+            .select_from(Post)
+            .where(Post.author_id == author_id)
+            .where(Post.created_at >= cutoff)
+        )
+        return (await self.db.execute(stmt)).scalar_one()
+
+    async def count_all_posts_by_author(self, author_id: str) -> int:
+        """Total posts by this author."""
+        stmt = (
+            select(func.count())
+            .select_from(Post)
+            .where(Post.author_id == author_id)
+        )
+        return (await self.db.execute(stmt)).scalar_one()

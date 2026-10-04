@@ -119,21 +119,14 @@ class StitchService:
                     )
                 f.write(chunk)
 
-        # Probe duration
-        duration = self.processor.get_duration(stored_name)
-        if duration and duration > settings.MAX_CLIP_SECONDS:
-            stored_path.unlink(missing_ok=True)
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Clip exceeds {settings.MAX_CLIP_SECONDS}s limit ({duration:.1f}s)",
-            )
+        
 
         contribution = Contribution(
             project_id=project.id,
             contributor_id=contributor.id,
             video_url=f"/media/uploads/{stored_name}",
             caption=caption,
-            duration_seconds=duration,
+            duration_seconds=None,
             consent_given=True,
             status="pending",
         )
@@ -238,3 +231,5 @@ class StitchService:
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only the project moderator can perform this action",
             )
+            
+            

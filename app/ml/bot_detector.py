@@ -13,7 +13,7 @@ without changing any downstream code.
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.post import Post

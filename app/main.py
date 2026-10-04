@@ -1,3 +1,4 @@
+import os
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from app.api.v1 import api_router
@@ -8,6 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.config import settings
+
+os.environ["TRANSFORMERS_VERBOSITY"] = "error"
 
 
 @asynccontextmanager

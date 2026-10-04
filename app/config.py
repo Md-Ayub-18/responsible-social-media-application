@@ -7,8 +7,7 @@ class Settings(BaseSettings):
     # App
     APP_NAME: str = "Interest Social Platform"
     APP_ENV: str = "development"
-    DEBUG: bool = True
-    SQL_ECHO: bool = False 
+    DEBUG: bool = True 
     API_V1_PREFIX: str = "/api/v1"
 
     # Security
@@ -36,7 +35,6 @@ class Settings(BaseSettings):
     MEDIA_UPLOADS_DIR: str = "./media/uploads"
     MEDIA_STITCHED_DIR: str = "./media/stitched"
     MAX_UPLOAD_MB: int = 50
-    MAX_CLIP_SECONDS: int = 60
     MEDIA_POSTS_DIR: str = "./media/posts"
     MAX_POST_MEDIA_MB: int = 100
 

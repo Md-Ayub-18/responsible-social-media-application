@@ -1,4 +1,4 @@
-from sqlalchemy import delete, select, update
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.focus_mode import FocusMode

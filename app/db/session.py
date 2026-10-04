@@ -11,7 +11,7 @@ from app.config import settings
 # echo=True during dev will log every SQL query — helpful, but noisy
 engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=settings.SQL_ECHO,
+    echo=False,
     future=True,
 )
 

@@ -1,4 +1,3 @@
-import os
 import subprocess
 import uuid
 from pathlib import Path
@@ -17,32 +16,7 @@ class StitchProcessor:
         self.stitched_dir = Path(settings.MEDIA_STITCHED_DIR).resolve()
         self.stitched_dir.mkdir(parents=True, exist_ok=True)
 
-    def _probe_duration(self, video_path: Path) -> float | None:
-        """Return duration in seconds via ffprobe. Returns None on failure."""
-        ffprobe = self.ffmpeg.replace("ffmpeg", "ffprobe")
-        if not os.path.exists(ffprobe):
-            # some builds don't ship ffprobe next to ffmpeg — try without
-            return None
-        try:
-            result = subprocess.run(
-                [
-                    ffprobe, "-v", "error",
-                    "-show_entries", "format=duration",
-                    "-of", "default=noprint_wrappers=1:nokey=1",
-                    str(video_path),
-                ],
-                capture_output=True, text=True, timeout=15,
-            )
-            return float(result.stdout.strip())
-        except Exception:
-            return None
-
-    def get_duration(self, filename: str) -> float | None:
-        path = self.uploads_dir / filename
-        if not path.exists():
-            return None
-        return self._probe_duration(path)
-
+    
     def stitch(self, project_id: str, ordered_filenames: list[str]) -> str:
         """
         Concatenate the given clip filenames (in order) into one MP4.
