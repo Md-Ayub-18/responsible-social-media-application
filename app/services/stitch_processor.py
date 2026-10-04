@@ -16,7 +16,7 @@ class StitchProcessor:
         self.stitched_dir = Path(settings.MEDIA_STITCHED_DIR).resolve()
         self.stitched_dir.mkdir(parents=True, exist_ok=True)
 
-    
+
     def stitch(self, project_id: str, ordered_filenames: list[str]) -> str:
         """
         Concatenate the given clip filenames (in order) into one MP4.

@@ -136,7 +136,6 @@ async def withdraw_contribution(
 ):
     svc = StitchService(db)
     await svc.withdraw_contribution(current_user, contribution_id)
-    return None
 
 
 # ---------- stitch ----------

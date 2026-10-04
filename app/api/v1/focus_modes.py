@@ -96,5 +96,4 @@ async def delete_focus_mode(
 ):
     service = FocusModeService(db)
     await service.delete_mode(current_user.id, mode_id)
-    return None
 

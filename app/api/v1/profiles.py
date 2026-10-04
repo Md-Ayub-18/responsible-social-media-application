@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.age_utils import classify_account
 from app.db.session import get_db
 from app.dependencies import get_current_user
 from app.models.user import User
@@ -30,6 +31,8 @@ async def get_profile(
     profile = PublicProfile.model_validate(user)
     profile.post_count = post_count
     profile.likes_received = likes_received
+    if user.date_of_birth:
+        profile.account_tier = classify_account(user.date_of_birth)
 
     # enrich posts with reactions & author
     post_service = PostService(db)

@@ -1,0 +1,28 @@
+# Ruff configuration for Verity
+# Target: Python 3.11
+
+target-version = "py311"
+line-length = 100
+
+# Top-level settings (not inside [lint])
+extend-exclude = [
+    "venv",
+    ".venv",
+    "migrations/versions",
+    "frontend",
+    "__pycache__",
+    ".ruff_cache",
+]
+
+[lint]
+# Only check for these categories
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes (unused imports, undefined names, etc.)
+    "W",    # pycodestyle warnings
+]
+
+# Deliberately ignored rules
+ignore = [
+    "E501",  # Line too long — handled by formatter
+]

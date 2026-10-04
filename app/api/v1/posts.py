@@ -52,7 +52,6 @@ async def delete_post(
 ):
     service = PostService(db)
     await service.delete_post(current_user, post_id)
-    return None
 
 
 @router.post("/posts/{post_id}/like", response_model=ReactionToggleResponse)

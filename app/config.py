@@ -1,13 +1,14 @@
 from functools import lru_cache
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    
+
     # App
     APP_NAME: str = "Interest Social Platform"
     APP_ENV: str = "development"
-    DEBUG: bool = True 
+    DEBUG: bool = True
     API_V1_PREFIX: str = "/api/v1"
 
     # Security

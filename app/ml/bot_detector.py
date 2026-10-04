@@ -19,7 +19,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.post import Post
 from app.models.user import User
 
-
 SUSPICIOUS_THRESHOLD = 0.60
 CONFIRMED_THRESHOLD = 0.85
 
@@ -31,9 +30,9 @@ def _signal_account_age(user: User) -> tuple[float, str | None]:
         return 0.0, None
     age_hours = (datetime.now(timezone.utc) - user.created_at.replace(tzinfo=timezone.utc)).total_seconds() / 3600
     if age_hours < 1:
-        return 0.35, f"Account is less than 1 hour old"
+        return 0.35, "Account is less than 1 hour old"
     if age_hours < 24:
-        return 0.20, f"Account is less than 24 hours old"
+        return 0.20, "Account is less than 24 hours old"
     return 0.0, None
 
 

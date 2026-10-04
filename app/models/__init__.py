@@ -1,4 +1,5 @@
 from app.models.bot_signal import BotSignal
+from app.models.community import Community, CommunityMember
 from app.models.focus_mode import FocusMode
 from app.models.guardian_link import GuardianLink
 from app.models.interest import Interest, UserInterest
@@ -10,7 +11,18 @@ from app.models.stitch_project import Contribution, StitchProject
 from app.models.user import User
 
 __all__ = [
-    "User", "Interest", "UserInterest", "FocusMode", "Post",
-    "StitchProject", "Contribution", "Report", "GuardianLink",
-    "BotSignal", "ModerationLog", "Reaction",
+    "BotSignal",
+    "Community",
+    "CommunityMember",
+    "Contribution",
+    "FocusMode",
+    "GuardianLink",
+    "Interest",
+    "ModerationLog",
+    "Post",
+    "Reaction",
+    "Report",
+    "StitchProject",
+    "User",
+    "UserInterest",
 ]

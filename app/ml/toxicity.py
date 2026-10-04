@@ -9,7 +9,6 @@ from functools import lru_cache
 
 from transformers import pipeline
 
-
 # Thresholds per label. Anything above triggers a hit.
 # Tuned conservatively — we prefer false positives we can review over false negatives.
 THRESHOLDS = {

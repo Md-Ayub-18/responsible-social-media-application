@@ -63,7 +63,7 @@ def _heuristic_signals(text: str) -> dict:
     length_variance = 0.0
     if len(lengths) >= 4:
         mean = sum(lengths) / len(lengths)
-        variance = sum((l - mean) ** 2 for l in lengths) / len(lengths)
+        variance = sum((n - mean) ** 2 for n in lengths) / len(lengths)
         length_variance = variance
 
     return {

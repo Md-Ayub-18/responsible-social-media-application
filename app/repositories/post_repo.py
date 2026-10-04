@@ -1,9 +1,8 @@
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.post import Post
-from sqlalchemy import or_
 
 
 class PostRepository:
@@ -80,9 +79,9 @@ class PostRepository:
     async def delete(self, post: Post) -> None:
         await self.db.delete(post)
         await self.db.commit()
-        
-        
-        
+
+
+
     async def count_recent_posts_by_author(self, author_id: str, minutes: int = 60) -> int:
         """Count posts by this author in the last N minutes."""
         from datetime import datetime, timedelta, timezone

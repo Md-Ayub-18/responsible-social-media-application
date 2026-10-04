@@ -57,8 +57,8 @@ class PostService:
             evaluate_bot.delay(author.id)
 
         return post
-    
-    
+
+
 
     # ---------- reads ----------
     async def get_post_or_404(self, post_id: str) -> Post:
@@ -115,7 +115,7 @@ class PostService:
                 detail="You can only delete your own posts",
             )
         await self.posts.delete(post)
-        
+
     async def toggle_like(self, user: User, post_id: str) -> tuple[bool, int]:
         """Toggle 'like' on a post. Returns (is_liked_now, new_count)."""
         post = await self.get_post_or_404(post_id)
@@ -160,4 +160,3 @@ class PostService:
             }
             out.append(data)
         return out
-        

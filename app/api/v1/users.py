@@ -51,4 +51,3 @@ async def deselect_interest(
 ):
     service = InterestService(db)
     await service.remove_user_interest(current_user.id, interest_id)
-    return None

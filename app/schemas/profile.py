@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict
 
@@ -6,11 +6,12 @@ from pydantic import BaseModel, ConfigDict
 class PublicProfile(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: str
     username: str
     display_name: str | None
     is_moderator: bool
     is_child_account: bool
+    date_of_birth: date | None = None
+    account_tier: str | None = None
     created_at: datetime
 
     # computed

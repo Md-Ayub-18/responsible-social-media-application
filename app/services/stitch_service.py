@@ -119,7 +119,7 @@ class StitchService:
                     )
                 f.write(chunk)
 
-        
+
 
         contribution = Contribution(
             project_id=project.id,
@@ -231,5 +231,4 @@ class StitchService:
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only the project moderator can perform this action",
             )
-            
-            
+

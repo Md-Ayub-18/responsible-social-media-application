@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -11,6 +11,16 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str = Field(min_length=8, max_length=128)
+    # date_of_birth is NOT here — set later via /set-date-of-birth
+
+
+class SetDateOfBirthRequest(BaseModel):
+    date_of_birth: date
+
+
+class ChangeDateOfBirthRequest(BaseModel):
+    new_date_of_birth: date
+    reason: str | None = Field(default=None, max_length=500)
 
 
 class UserLogin(BaseModel):
@@ -25,8 +35,16 @@ class UserRead(UserBase):
     is_active: bool
     is_verified: bool
     is_child_account: bool
-    is_moderator: bool 
+    is_moderator: bool
+    date_of_birth: date | None
+    account_tier: str | None = None   # computed in route
     created_at: datetime
+
+
+class SetDateOfBirthResponse(BaseModel):
+    user: UserRead
+    tier: str
+    message: str
 
 
 class TokenResponse(BaseModel):

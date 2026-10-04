@@ -1,14 +1,15 @@
 import os
-from fastapi.staticfiles import StaticFiles
+from contextlib import asynccontextmanager
 from pathlib import Path
-from app.api.v1 import api_router
-from app.db.session import AsyncSessionLocal
-from app.services.interest_service import InterestService
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
+from fastapi.staticfiles import StaticFiles
 
+from app.api.v1 import api_router
 from app.config import settings
+from app.db.session import AsyncSessionLocal
+from app.services.interest_service import InterestService
 
 os.environ["TRANSFORMERS_VERBOSITY"] = "error"
 

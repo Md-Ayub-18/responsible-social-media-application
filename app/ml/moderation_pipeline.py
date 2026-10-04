@@ -8,7 +8,6 @@ import re
 
 from app.ml import ai_text_detector, toxicity
 
-
 # Decision values match the Post model's moderation_status column
 STATUS_APPROVED = "approved"
 STATUS_FLAGGED = "flagged"
