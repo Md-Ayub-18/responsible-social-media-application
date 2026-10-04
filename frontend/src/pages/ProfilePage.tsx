@@ -4,6 +4,7 @@ import { api, ApiError } from "../lib/api";
 import type { UserProfileResponse } from "../lib/types";
 import PostCard from "../components/PostCard";
 import { CardSkeleton, PostSkeleton } from "../components/Skeleton";
+import TierBadge from "../components/TierBadge";
 
 export default function ProfilePage() {
   const { username } = useParams<{ username: string }>();
@@ -41,16 +42,17 @@ export default function ProfilePage() {
   }, [username]);
 
   if (loading) {
-  return (
-    <div className="max-w-2xl mx-auto px-4 py-6">
-      <CardSkeleton />
-      <div className="mt-5 space-y-4">
-        <PostSkeleton />
-        <PostSkeleton />
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-6">
+        <CardSkeleton />
+        <div className="mt-5 space-y-4">
+          <PostSkeleton />
+          <PostSkeleton />
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
+
   if (error || !data) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-6">
@@ -77,10 +79,11 @@ export default function ProfilePage() {
             {profile.username.slice(0, 1).toUpperCase()}
           </div>
           <div className="flex-1">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-bold text-gray-900">
                 {profile.display_name || profile.username}
               </h1>
+              <TierBadge tier={profile.account_tier} size="md" />
               {profile.is_moderator && (
                 <span className="text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-100">
                   moderator
@@ -100,12 +103,20 @@ export default function ProfilePage() {
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 mt-5 pt-5 border-t border-gray-100">
           <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">{profile.post_count}</p>
-            <p className="text-xs text-gray-500 uppercase tracking-wider">Posts</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {profile.post_count}
+            </p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider">
+              Posts
+            </p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">{profile.likes_received}</p>
-            <p className="text-xs text-gray-500 uppercase tracking-wider">Likes received</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {profile.likes_received}
+            </p>
+            <p className="text-xs text-gray-500 uppercase tracking-wider">
+              Likes received
+            </p>
           </div>
         </div>
       </div>

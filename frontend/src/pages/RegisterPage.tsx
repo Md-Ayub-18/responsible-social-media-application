@@ -19,15 +19,14 @@ export default function RegisterPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-
     if (password.length < 8) {
       setError("Password must be at least 8 characters");
       return;
     }
-
     setLoading(true);
     try {
       await register(email, username, password, displayName || username);
+      // The DOB modal will appear automatically because `needsDOB` is true
       navigate("/feed");
     } catch (err) {
       const msg =
@@ -63,7 +62,6 @@ export default function RegisterPage() {
               required
               autoFocus
             />
-
             <Input
               label="Username"
               value={username}
@@ -72,14 +70,12 @@ export default function RegisterPage() {
               required
               minLength={3}
             />
-
             <Input
               label="Display name"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="Optional"
             />
-
             <Input
               label="Password"
               type="password"

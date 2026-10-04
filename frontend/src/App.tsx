@@ -13,6 +13,10 @@ import ProfilePage from "./pages/ProfilePage";
 import StitchListPage from "./pages/StitchListPage";
 import StitchDetailPage from "./pages/StitchDetailPage";
 import GuardianPage from "./pages/GuardianPage";
+import DateOfBirthModal from "./components/DateOfBirthModal";
+import CommunitiesPage from "./pages/CommunitiesPage";
+import CommunityDetailPage from "./pages/CommunityDetailPage";
+import SettingsPage from "./pages/SettingsPage";
 
 
 
@@ -30,12 +34,13 @@ function ModeratorOnly({ children }: { children: ReactNode }) {
 }
 
 function Protected({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, needsDOB } = useAuth();
   if (loading) return <div className="p-8 text-gray-500">Loading...</div>;
   if (!user) return <Navigate to="/login" replace />;
   return (
     <>
       <Navbar />
+      {needsDOB && <DateOfBirthModal />}
       {children}
     </>
   );
@@ -63,6 +68,9 @@ function AppRoutes() {
       <Route path="/stitch/:projectId" element={<Protected><StitchDetailPage /></Protected>} />
       <Route path="/guardian" element={<Protected><GuardianPage /></Protected>} />
       <Route path="*" element={<Navigate to="/feed" replace />} />
+      <Route path="/communities" element={<Protected><CommunitiesPage /></Protected>} />
+      <Route path="/c/:slug" element={<Protected><CommunityDetailPage /></Protected>} />
+      <Route path="/settings" element={<Protected><SettingsPage /></Protected>} />
     </Routes>
   );
 }

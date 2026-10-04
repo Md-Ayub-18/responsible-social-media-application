@@ -15,6 +15,7 @@ class PostCreate(BaseModel):
     text: str = Field(min_length=1, max_length=5000)
     interest_slug: str = Field(min_length=1, max_length=50)
     media_urls: list[str] = Field(default_factory=list)
+    community_id: str | None = None
 
 
 class PostRead(BaseModel):
@@ -25,6 +26,7 @@ class PostRead(BaseModel):
     text: str
     interest_slug: str
     media_urls: list[str]
+    community_id: str | None
     ai_generated: bool
     ai_label_shown: bool
     moderation_status: str

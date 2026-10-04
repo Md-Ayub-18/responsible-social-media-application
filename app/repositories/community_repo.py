@@ -125,6 +125,7 @@ class CommunityRepository:
 
         stmt = (
             select(Post)
+            .where(Post.community_id == community_id)
             .where(Post.interest_slug == community.interest_slug)
             .where(Post.is_hidden.is_(False))
             .where(Post.moderation_status == "approved")

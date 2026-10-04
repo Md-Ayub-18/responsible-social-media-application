@@ -27,6 +27,7 @@ async def create_post(
         text=payload.text,
         interest_slug=payload.interest_slug,
         media_urls=payload.media_urls,
+        community_id=payload.community_id,
     )
     enriched = await service.enrich_posts_with_reactions([post], current_user)
     return enriched[0]

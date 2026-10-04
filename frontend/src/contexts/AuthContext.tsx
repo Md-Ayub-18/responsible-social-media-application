@@ -11,6 +11,7 @@ import type { TokenResponse, User } from "../lib/types";
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
+  needsDOB: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (
     email: string,
@@ -18,6 +19,7 @@ interface AuthContextValue {
     password: string,
     displayName?: string
   ) => Promise<void>;
+  setDateOfBirth: (dob: string) => Promise<User>;
   logout: () => void;
 }
 
@@ -42,6 +44,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const needsDOB = !!user && (user.date_of_birth === null || !user.is_active);
 
   async function login(email: string, password: string) {
     const data = await api.post<TokenResponse>("/api/v1/auth/login", {
@@ -68,13 +72,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(data.user);
   }
 
+  async function setDateOfBirth(dob: string): Promise<User> {
+    const res = await api.post<{ user: User }>("/api/v1/auth/set-date-of-birth", {
+      date_of_birth: dob,
+    });
+    setUser(res.user);
+    return res.user;
+  }
+
   function logout() {
     setToken(null);
     setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, needsDOB, login, register, setDateOfBirth, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

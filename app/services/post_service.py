@@ -19,7 +19,12 @@ class PostService:
 
     # ---------- create ----------
     async def create_post(
-        self, author: User, text: str, interest_slug: str, media_urls: list[str]
+        self,
+        author: User,
+        text: str,
+        interest_slug: str,
+        media_urls: list[str],
+        community_id: str | None = None,       # ← new parameter
     ) -> Post:
         # validate interest exists
         interest = await self.interests.get_by_slug(interest_slug)
@@ -29,12 +34,32 @@ class PostService:
                 detail=f"Unknown interest: {interest_slug}",
             )
 
-        # Create post immediately with pending status — AI runs in background
+        # If community_id is provided, validate it exists and user is a member
+        if community_id:
+            from app.repositories.community_repo import CommunityRepository
+            community_repo = CommunityRepository(self.db)
+            community = await community_repo.get_by_id(community_id)
+            if not community:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Community not found",
+                )
+            membership = await community_repo.get_membership(author.id, community_id)
+            if not membership:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="You must be a member of this community to post here",
+                )
+            # Community posts use the community's interest
+            interest_slug = community.interest_slug
+
+        # Create post as pending (AI runs in background)
         post = Post(
             author_id=author.id,
             text=text,
             interest_slug=interest_slug,
             media_urls=media_urls or [],
+            community_id=community_id,       # ← new
             ai_generated=False,
             ai_label_shown=False,
             moderation_status="pending",
@@ -42,18 +67,14 @@ class PostService:
         )
         post = await self.posts.create(post)
 
-        # Queue moderation task (always — every post must be moderated)
+        # Queue background jobs
         from app.workers.tasks import evaluate_bot, moderate_post
         moderate_post.delay(post.id)
 
-        # Bot evaluation: throttled, not on every post.
-        # Run when: author's post count is a multiple of 10, OR
-        #           author has posted > 5 times in the last hour (burst).
+        # Throttled bot evaluation
         total_posts = await self.posts.count_all_posts_by_author(author.id)
         recent_posts = await self.posts.count_recent_posts_by_author(author.id, minutes=60)
-
-        should_evaluate = (total_posts % 10 == 0) or (recent_posts > 5)
-        if should_evaluate:
+        if (total_posts % 10 == 0) or (recent_posts > 5):
             evaluate_bot.delay(author.id)
 
         return post
@@ -147,6 +168,7 @@ class PostService:
                 "text": p.text,
                 "interest_slug": p.interest_slug,
                 "media_urls": p.media_urls or [],
+                "community_id": p.community_id,
                 "ai_generated": p.ai_generated,
                 "ai_label_shown": p.ai_label_shown,
                 "moderation_status": p.moderation_status,

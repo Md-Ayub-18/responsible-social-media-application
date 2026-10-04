@@ -10,6 +10,7 @@ class Post(Base, TimestampMixin):
     __tablename__ = "posts"
     __table_args__ = (
         Index("ix_posts_interest_created", "interest_slug", "created_at"),
+        Index("ix_posts_community_created", "community_id", "created_at"),   # ← add
     )
 
     id: Mapped[str] = mapped_column(
@@ -18,6 +19,12 @@ class Post(Base, TimestampMixin):
     author_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("users.id", ondelete="CASCADE"),
         index=True, nullable=False,
+    )
+
+    # If set, post belongs to a specific community; if null, it's a feed post.
+    community_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("communities.id", ondelete="SET NULL"),
+        index=True, nullable=True,
     )
 
     text: Mapped[str] = mapped_column(Text, nullable=False)

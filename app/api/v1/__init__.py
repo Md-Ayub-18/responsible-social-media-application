@@ -4,6 +4,7 @@ from app.api.v1 import (
     admin,
     auth,
     bot_detection,
+    communities,
     focus_modes,
     guardian,
     interests,
@@ -30,3 +31,4 @@ api_router.include_router(reports.router)
 api_router.include_router(guardian.router)
 api_router.include_router(bot_detection.router)
 api_router.include_router(admin.router)
+api_router.include_router(communities.router)

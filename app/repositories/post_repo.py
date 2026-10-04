@@ -44,6 +44,7 @@ class PostRepository:
             select(Post)
             .where(Post.interest_slug.in_(interest_slugs))
             .where(Post.is_hidden.is_(False))
+            .where(Post.community_id.is_(None))
         )
 
         # Approved posts are visible to everyone. Flagged posts are visible

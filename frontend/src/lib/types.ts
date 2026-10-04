@@ -6,7 +6,9 @@ export interface User {
   is_active: boolean;
   is_verified: boolean;
   is_child_account: boolean;
-  is_moderator: boolean;   
+  is_moderator: boolean;
+  date_of_birth: string | null;
+  account_tier: string | null;
   created_at: string;
 }
 
@@ -97,6 +99,7 @@ export interface Post {
   text: string;
   interest_slug: string;
   media_urls: string[];
+   community_id: string | null;   
   ai_generated: boolean;
   ai_label_shown: boolean;
   moderation_status: string;
@@ -104,8 +107,8 @@ export interface Post {
   is_hidden: boolean;
   created_at: string;
   updated_at: string;
-  reaction_count: number;      // ← add
-  is_liked_by_me: boolean;     // ← add
+  reaction_count: number;      
+  is_liked_by_me: boolean;     
 }
 
 export interface PublicProfile {
@@ -114,6 +117,8 @@ export interface PublicProfile {
   display_name: string | null;
   is_moderator: boolean;
   is_child_account: boolean;
+  date_of_birth: string | null;      
+  account_tier: string | null;       
   created_at: string;
   post_count: number;
   likes_received: number;
@@ -122,4 +127,32 @@ export interface PublicProfile {
 export interface UserProfileResponse {
   profile: PublicProfile;
   posts: Post[];
+}
+
+export interface Community {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  emoji: string | null;
+  interest_slug: string;
+  creator_id: string;
+  is_public: boolean;
+  member_count: number;
+  created_at: string;
+  updated_at: string;
+  is_member: boolean;
+  is_moderator: boolean;
+}
+
+export interface CommunityListResponse {
+  communities: Community[];
+  count: number;
+}
+
+export interface JoinLeaveResponse {
+  community_id: string;
+  is_member: boolean;
+  member_count: number;
+  message: string;
 }
