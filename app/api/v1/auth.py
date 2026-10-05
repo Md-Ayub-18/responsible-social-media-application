@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.age_utils import calculate_age, classify_account, tier_message
 from app.db.session import get_db
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, get_current_user_allow_inactive
 from app.models.user import User
 from app.schemas.user import (
     ChangeDateOfBirthRequest,
@@ -38,7 +38,7 @@ async def register(payload: UserCreate, db: AsyncSession = Depends(get_db)):
 @router.post("/set-date-of-birth", response_model=SetDateOfBirthResponse)
 async def set_date_of_birth(
     payload: SetDateOfBirthRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user_allow_inactive), 
     db: AsyncSession = Depends(get_db),
 ):
     """Complete registration by setting DOB. Activates the account."""
@@ -66,7 +66,7 @@ async def login(payload: UserLogin, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/me", response_model=UserRead)
-async def me(current_user: User = Depends(get_current_user)):
+async def me(current_user: User = Depends(get_current_user_allow_inactive)):
     return _user_read_with_tier(current_user)
 
 
