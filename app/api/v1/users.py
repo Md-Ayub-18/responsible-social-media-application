@@ -6,6 +6,9 @@ from app.dependencies import get_current_user
 from app.models.user import User
 from app.schemas.interest import InterestRead, InterestSelect, UserInterestsResponse
 from app.services.interest_service import InterestService
+from app.schemas.social import PrivacyUpdateRequest
+from app.services.social_service import SocialService
+from app.schemas.user import UserRead
 
 router = APIRouter(prefix="/users/me", tags=["users"])
 
@@ -51,3 +54,14 @@ async def deselect_interest(
 ):
     service = InterestService(db)
     await service.remove_user_interest(current_user.id, interest_id)
+
+@router.patch("/privacy", response_model=UserRead)
+async def update_privacy(
+    payload: PrivacyUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Toggle private account on/off."""
+    service = SocialService(db)
+    user = await service.set_private(current_user, payload.is_private)
+    return UserRead.model_validate(user)

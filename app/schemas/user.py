@@ -36,8 +36,9 @@ class UserRead(UserBase):
     is_verified: bool
     is_child_account: bool
     is_moderator: bool
+    is_private: bool
     date_of_birth: date | None
-    account_tier: str | None = None   # computed in route
+    account_tier: str | None = None
     created_at: datetime
 
 

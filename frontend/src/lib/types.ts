@@ -7,11 +7,11 @@ export interface User {
   is_verified: boolean;
   is_child_account: boolean;
   is_moderator: boolean;
+  is_private: boolean;              
   date_of_birth: string | null;
   account_tier: string | null;
   created_at: string;
 }
-
 export interface TokenResponse {
   access_token: string;
   token_type: string;
@@ -93,13 +93,15 @@ export interface Contribution {
   created_at: string;
   updated_at: string;
 }
+
 export interface Post {
   id: string;
   author_id: string;
   text: string;
   interest_slug: string;
   media_urls: string[];
-   community_id: string | null;   
+  community_id: string | null;
+  audience: string;                  
   ai_generated: boolean;
   ai_label_shown: boolean;
   moderation_status: string;
@@ -107,21 +109,24 @@ export interface Post {
   is_hidden: boolean;
   created_at: string;
   updated_at: string;
-  reaction_count: number;      
-  is_liked_by_me: boolean;     
+  reaction_count: number;
+  is_liked_by_me: boolean;
 }
-
 export interface PublicProfile {
   id: string;
   username: string;
   display_name: string | null;
   is_moderator: boolean;
   is_child_account: boolean;
-  date_of_birth: string | null;      
-  account_tier: string | null;       
+  is_private: boolean;              
+  date_of_birth: string | null;
+  account_tier: string | null;
   created_at: string;
   post_count: number;
   likes_received: number;
+  follower_count: number;           
+  following_count: number;          
+  is_following: boolean;            
 }
 
 export interface UserProfileResponse {
@@ -155,4 +160,30 @@ export interface JoinLeaveResponse {
   is_member: boolean;
   member_count: number;
   message: string;
+}
+
+export interface FollowResponse {
+  user_id: string;
+  username: string;
+  is_following: boolean;
+  follower_count: number;
+}
+
+export interface BlockResponse {
+  user_id: string;
+  username: string;
+  is_blocked: boolean;
+}
+
+export interface BlockedUser {
+  user_id: string;
+  username: string;
+  display_name: string | null;
+}
+
+export interface PublicUserBrief {
+  id: string;
+  username: string;
+  display_name: string | null;
+  is_private: boolean;
 }

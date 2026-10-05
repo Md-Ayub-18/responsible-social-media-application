@@ -25,6 +25,7 @@ export default function CreatePostPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [audience, setAudience] = useState<"public" | "private">("public");
 
   // Load interests + community (if applicable)
   useEffect(() => {
@@ -121,6 +122,7 @@ export default function CreatePostPage() {
         media_urls: mediaUrls,
       };
       if (communityId) body.community_id = communityId;
+      if (!communityId) body.audience = audience;
 
       await api.post("/api/v1/posts", body);
 
@@ -196,32 +198,38 @@ export default function CreatePostPage() {
         )}
 
         {/* Interest selector — hidden when in a community (interest is locked) */}
-        {!community && (
-          <>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              What's this about?
-            </label>
-            <div className="flex flex-wrap gap-2 mb-5">
-              {interests.map((i) => {
-                const on = i.slug === slug;
-                return (
-                  <button
-                    type="button"
-                    key={i.id}
-                    onClick={() => setSlug(i.slug)}
-                    className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${
-                      on
-                        ? "bg-sky-100 border-sky-300 text-sky-800 font-medium"
-                        : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
-                    }`}
-                  >
-                    {i.emoji} {i.name}
-                  </button>
-                );
-              })}
-            </div>
-          </>
-        )}
+       {/* Audience (only for feed posts, not community posts) */}
+{!communityId && (
+  <div className="mb-5">
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Who can see this?
+    </label>
+    <div className="flex gap-2">
+      <button
+        type="button"
+        onClick={() => setAudience("public")}
+        className={`text-sm px-4 py-2 rounded-lg border transition-colors ${
+          audience === "public"
+            ? "bg-sky-50 border-sky-300 text-sky-800 font-medium"
+            : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
+        }`}
+      >
+        🌐 Public
+      </button>
+      <button
+        type="button"
+        onClick={() => setAudience("private")}
+        className={`text-sm px-4 py-2 rounded-lg border transition-colors ${
+          audience === "private"
+            ? "bg-sky-50 border-sky-300 text-sky-800 font-medium"
+            : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
+        }`}
+      >
+        🔒 Followers only
+      </button>
+    </div>
+  </div>
+)}
 
         {community && (
           <div className="mb-5 bg-sky-50 border border-sky-100 rounded-lg px-3 py-2 text-xs text-sky-900">

@@ -29,6 +29,7 @@ class User(Base, TimestampMixin):
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_child_account: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_moderator: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_private: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # Age
     date_of_birth: Mapped[date | None] = mapped_column(Date, nullable=True)

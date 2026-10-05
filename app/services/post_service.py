@@ -94,7 +94,7 @@ class PostService:
     # ---------- feed ----------
     async def build_feed(
         self, user: User, limit: int = 50, offset: int = 0
-    ) -> tuple[list[Post], list[str], bool, str | None]:
+    ) -> tuple[list[dict], list[str], bool, str | None]:
         """Returns (posts, applied_slugs, focus_applied, focus_name)."""
 
         # 1. user's selected interests
@@ -104,7 +104,7 @@ class PostService:
         if not user_slugs:
             return [], [], False, None
 
-        # 2. active focus mode (if any)
+        # 2. active focus mode
         focus_applied = False
         focus_name = None
         effective_slugs = set(user_slugs)
@@ -120,10 +120,23 @@ class PostService:
         if not effective_slugs:
             return [], list(effective_slugs), focus_applied, focus_name
 
-        # 3. fetch posts
+        # 3. Social graph: who can the viewer see private posts from?
+        from app.repositories.social_repo import SocialRepository
+        social = SocialRepository(self.db)
+        following_ids = await social.following_ids(user.id)
+        blocked_ids = await social.blocked_ids(user.id)
+
+        # 4. Fetch posts
         posts = await self.posts.list_by_interest_slugs(
-            sorted(effective_slugs), limit=limit, offset=offset,for_user_id=user.id,
+            sorted(effective_slugs),
+            limit=limit,
+            offset=offset,
+            for_user_id=user.id,
+            viewer_id=user.id,
+            allowed_private_author_ids=following_ids,
+            blocked_ids=blocked_ids,
         )
+
         enriched = await self.enrich_posts_with_reactions(posts, user)
         return enriched, sorted(effective_slugs), focus_applied, focus_name
 

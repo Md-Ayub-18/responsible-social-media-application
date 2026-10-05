@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.api.v1 import (
     admin,
     auth,
+    blocks,
     bot_detection,
     communities,
     focus_modes,
@@ -12,6 +13,7 @@ from app.api.v1 import (
     posts,
     profiles,
     reports,
+    social,
     stitch,
     uploads,
     users,
@@ -32,3 +34,5 @@ api_router.include_router(guardian.router)
 api_router.include_router(bot_detection.router)
 api_router.include_router(admin.router)
 api_router.include_router(communities.router)
+api_router.include_router(social.router)
+api_router.include_router(blocks.router)

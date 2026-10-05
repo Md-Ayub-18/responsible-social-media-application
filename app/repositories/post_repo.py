@@ -36,6 +36,9 @@ class PostRepository:
         offset: int = 0,
         include_flagged: bool = False,
         for_user_id: str | None = None,
+        viewer_id: str | None = None,
+        allowed_private_author_ids: set[str] | None = None,
+        blocked_ids: set[str] | None = None,
     ) -> list[Post]:
         if not interest_slugs:
             return []
@@ -47,9 +50,9 @@ class PostRepository:
             .where(Post.community_id.is_(None))
         )
 
-        # Approved posts are visible to everyone. Flagged posts are visible
-        # to their author only, so the user can see what happened to their
-        # own content.
+        # Visibility filter:
+        #   - approved posts visible to all
+        #   - own flagged posts visible to the author
         if for_user_id:
             stmt = stmt.where(
                 or_(
@@ -59,6 +62,27 @@ class PostRepository:
             )
         elif not include_flagged:
             stmt = stmt.where(Post.moderation_status == "approved")
+
+        # Audience filter:
+        #   - public posts: visible to all
+        #   - private posts: visible only to the author + their followers
+        #     (we pass in allowed_private_author_ids = IDs the viewer may see)
+        if for_user_id is not None:
+            allowed = allowed_private_author_ids or set()
+            allowed_with_self = allowed | {for_user_id}
+            stmt = stmt.where(
+                or_(
+                    Post.audience == "public",
+                    Post.author_id.in_(allowed_with_self),
+                )
+            )
+        else:
+            # Anonymous viewer (rare) → only public
+            stmt = stmt.where(Post.audience == "public")
+
+        # Block filter: exclude anything authored by a blocked/blocking user
+        if blocked_ids:
+            stmt = stmt.where(~Post.author_id.in_(blocked_ids))
 
         stmt = stmt.order_by(Post.created_at.desc()).limit(limit).offset(offset)
         result = await self.db.execute(stmt)

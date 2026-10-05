@@ -10,7 +10,8 @@ class Post(Base, TimestampMixin):
     __tablename__ = "posts"
     __table_args__ = (
         Index("ix_posts_interest_created", "interest_slug", "created_at"),
-        Index("ix_posts_community_created", "community_id", "created_at"),   # ← add
+        Index("ix_posts_community_created", "community_id", "created_at"),
+        Index("ix_posts_audience_created", "audience", "created_at"),
     )
 
     id: Mapped[str] = mapped_column(
@@ -25,6 +26,13 @@ class Post(Base, TimestampMixin):
     community_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("communities.id", ondelete="SET NULL"),
         index=True, nullable=True,
+    )
+
+    # Post visibility:
+    #   "public"  → visible to anyone with matching interests
+    #   "private" → visible only to the author and their followers
+    audience: Mapped[str] = mapped_column(
+        String(20), default="public", index=True, nullable=False
     )
 
     text: Mapped[str] = mapped_column(Text, nullable=False)
@@ -46,4 +54,4 @@ class Post(Base, TimestampMixin):
     is_hidden: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     def __repr__(self) -> str:
-        return f"<Post {self.id[:8]} interest={self.interest_slug}>"
+        return f"<Post {self.id[:8]} interest={self.interest_slug} audience={self.audience}>"

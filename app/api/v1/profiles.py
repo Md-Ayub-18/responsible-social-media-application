@@ -28,13 +28,20 @@ async def get_profile(
     likes_received = await repo.count_likes_received(user.id)
     posts = await repo.list_user_posts(user.id, limit=30)
 
+        # Social graph: follow counts + viewer status
+    from app.services.social_service import SocialService
+    social = SocialService(db)
+    follow_status = await social.get_follow_status(current_user, user)
+
     profile = PublicProfile.model_validate(user)
     profile.post_count = post_count
     profile.likes_received = likes_received
+    profile.follower_count = follow_status["follower_count"]
+    profile.following_count = follow_status["following_count"]
+    profile.is_following = follow_status["is_following"]
     if user.date_of_birth:
         profile.account_tier = classify_account(user.date_of_birth)
 
-    # enrich posts with reactions & author
     post_service = PostService(db)
     enriched = await post_service.enrich_posts_with_reactions(posts, current_user)
 

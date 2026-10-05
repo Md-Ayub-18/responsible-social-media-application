@@ -116,7 +116,6 @@ class CommunityRepository:
     async def list_community_posts(
         self, community_id: str, limit: int = 30, offset: int = 0
     ):
-        """Return posts whose interest_slug matches the community's interest."""
         from app.models.post import Post
 
         community = await self.get_by_id(community_id)
@@ -126,7 +125,6 @@ class CommunityRepository:
         stmt = (
             select(Post)
             .where(Post.community_id == community_id)
-            .where(Post.interest_slug == community.interest_slug)
             .where(Post.is_hidden.is_(False))
             .where(Post.moderation_status == "approved")
             .order_by(Post.created_at.desc())

@@ -117,6 +117,11 @@ export default function PostCard({ post, onLikeChange }: PostCardProps) {
         {/* Badges + Like row */}
         <div className="flex items-center justify-between mt-4">
           <div className="flex flex-wrap gap-2">
+            {post.audience === "private" && (
+  <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-gray-100 text-gray-600 border border-gray-200">
+    🔒 Followers only
+  </span>
+)}
             {post.ai_label_shown && (
               <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-amber-50 text-amber-700 border border-amber-100">
                 ✨ AI-generated

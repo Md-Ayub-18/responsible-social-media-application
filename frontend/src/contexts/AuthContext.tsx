@@ -1,9 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { api, setToken } from "../lib/api";
 import type { TokenResponse, User } from "../lib/types";
@@ -20,6 +15,7 @@ interface AuthContextValue {
     displayName?: string
   ) => Promise<void>;
   setDateOfBirth: (dob: string) => Promise<User>;
+  setUser: (user: User | null) => void;
   logout: () => void;
 }
 
@@ -73,9 +69,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function setDateOfBirth(dob: string): Promise<User> {
-    const res = await api.post<{ user: User }>("/api/v1/auth/set-date-of-birth", {
-      date_of_birth: dob,
-    });
+    const res = await api.post<{ user: User }>(
+      "/api/v1/auth/set-date-of-birth",
+      { date_of_birth: dob }
+    );
     setUser(res.user);
     return res.user;
   }
@@ -87,7 +84,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, needsDOB, login, register, setDateOfBirth, logout }}
+      value={{
+        user,
+        loading,
+        needsDOB,
+        login,
+        register,
+        setDateOfBirth,
+        setUser,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>
