@@ -96,6 +96,62 @@ export default function SettingsPage() {
       {/* Blocked users */}
       <BlockedUsersSection />
 
+      
+      {/* Screen time */}
+<div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-4">
+  <h2 className="font-semibold text-gray-900 mb-1">Screen time</h2>
+  <p className="text-sm text-gray-500 mb-4">
+    Get a friendly nudge when you've been on Verity for a while.
+  </p>
+
+  <div className="space-y-4">
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Daily limit: {user.daily_screen_time_limit_minutes} minutes
+      </label>
+      <input
+        type="range"
+        min={15}
+        max={240}
+        step={15}
+        value={user.daily_screen_time_limit_minutes}
+        onChange={async (e) => {
+          const minutes = parseInt(e.target.value, 10);
+          const updated = await api.patch<User>("/api/v1/screen-time/limit", {
+            daily_screen_time_limit_minutes: minutes,
+            break_reminders_enabled: user.break_reminders_enabled,
+          });
+          setUser(updated);
+        }}
+        className="w-full"
+      />
+    </div>
+
+    <label className="flex items-center gap-3 text-sm text-gray-700">
+      <input
+        type="checkbox"
+        checked={user.break_reminders_enabled}
+        disabled={user.is_child_account}
+        onChange={async (e) => {
+          const updated = await api.patch<User>("/api/v1/screen-time/limit", {
+            daily_screen_time_limit_minutes: user.daily_screen_time_limit_minutes,
+            break_reminders_enabled: e.target.checked,
+          });
+          setUser(updated);
+        }}
+      />
+      <span>
+        Show break reminders
+        {user.is_child_account && (
+          <span className="text-xs text-gray-400 ml-1">
+            (cannot be disabled for child accounts)
+          </span>
+        )}
+      </span>
+    </label>
+  </div>
+</div>
+
       {/* Coming soon */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <h2 className="font-semibold text-gray-900 mb-2">Coming soon</h2>

@@ -17,6 +17,7 @@ from app.api.v1 import (
     stitch,
     uploads,
     users,
+    screen_time,
 )
 
 api_router = APIRouter()
@@ -36,3 +37,5 @@ api_router.include_router(admin.router)
 api_router.include_router(communities.router)
 api_router.include_router(social.router)
 api_router.include_router(blocks.router)
+api_router.include_router(screen_time.router)
+

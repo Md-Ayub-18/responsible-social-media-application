@@ -17,6 +17,8 @@ import DateOfBirthModal from "./components/DateOfBirthModal";
 import CommunitiesPage from "./pages/CommunitiesPage";
 import CommunityDetailPage from "./pages/CommunityDetailPage";
 import SettingsPage from "./pages/SettingsPage";
+import { useScreenTime } from "./hooks/useScreenTime";
+import BreakReminder from "./components/BreakReminder";
 
 
 
@@ -35,12 +37,20 @@ function ModeratorOnly({ children }: { children: ReactNode }) {
 
 function Protected({ children }: { children: ReactNode }) {
   const { user, loading, needsDOB } = useAuth();
+  const { todayMinutes, limitMinutes, limitReached } = useScreenTime();
   if (loading) return <div className="p-8 text-gray-500">Loading...</div>;
   if (!user) return <Navigate to="/login" replace />;
   return (
     <>
       <Navbar />
       {needsDOB && <DateOfBirthModal />}
+      {limitReached && user.break_reminders_enabled && (
+        <BreakReminder
+          todayMinutes={todayMinutes}
+          limitMinutes={limitMinutes}
+          isChild={user.is_child_account}
+        />
+      )}
       {children}
     </>
   );

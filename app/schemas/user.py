@@ -39,6 +39,8 @@ class UserRead(UserBase):
     is_private: bool
     date_of_birth: date | None
     account_tier: str | None = None
+    daily_screen_time_limit_minutes: int = 60
+    break_reminders_enabled: bool = True
     created_at: datetime
 
 

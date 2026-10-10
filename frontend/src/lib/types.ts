@@ -11,6 +11,8 @@ export interface User {
   date_of_birth: string | null;
   account_tier: string | null;
   created_at: string;
+  daily_screen_time_limit_minutes: number;
+  break_reminders_enabled: boolean;
 }
 export interface TokenResponse {
   access_token: string;
@@ -188,4 +190,21 @@ export interface PublicUserBrief {
   username: string;
   display_name: string | null;
   is_private: boolean;
+}
+
+export interface HeartbeatResponse {
+  session_id: string;
+  duration_seconds: number;
+  today_total_seconds: number;
+  limit_seconds: number;
+  limit_reached: boolean;
+}
+
+export interface TodayScreenTime {
+  today_total_seconds: number;
+  today_total_minutes: number;
+  limit_minutes: number;
+  limit_reached: boolean;
+  break_reminders_enabled: boolean;
+  is_child_account: boolean;
 }

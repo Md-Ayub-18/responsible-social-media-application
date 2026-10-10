@@ -6,6 +6,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, TimestampMixin
 
+from sqlalchemy import Integer
+
 
 class User(Base, TimestampMixin):
     __tablename__ = "users"
@@ -40,5 +42,15 @@ class User(Base, TimestampMixin):
     # Focus mode
     active_focus_mode_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
 
+        # Screen time
+    daily_screen_time_limit_minutes: Mapped[int] = mapped_column(
+        Integer, default=60, nullable=False
+    )
+    break_reminders_enabled: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False
+    )
+
     def __repr__(self) -> str:
         return f"<User {self.username} ({self.email})>"
+
+

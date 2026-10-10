@@ -12,6 +12,8 @@ from app.models.report import Report
 from app.models.stitch_project import Contribution, StitchProject
 from app.models.user import User
 from app.models.engagement_signal import EngagementSignal
+from app.models.screen_session import ScreenSession
+
 
 __all__ = [
     "User",
@@ -31,4 +33,6 @@ __all__ = [
     "Follow",
     "Block",
     "EngagementSignal",
+    "ScreenSession",
+
 ]
