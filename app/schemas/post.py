@@ -31,8 +31,8 @@ class PostRead(BaseModel):
     ai_label_shown: bool
     moderation_status: str
     moderation_reason: str | None
-    media_moderation_status: str             
-    media_moderation_reason: str | None 
+    media_moderation_status: str
+    media_moderation_reason: str | None
     is_hidden: bool
     created_at: datetime
     updated_at: datetime

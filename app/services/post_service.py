@@ -81,6 +81,8 @@ class PostService:
         if (total_posts % 10 == 0) or (recent_posts > 5):
             evaluate_bot.delay(author.id)
 
+        return post
+
 
 
     # ---------- reads ----------
@@ -188,7 +190,7 @@ class PostService:
                 "ai_label_shown": p.ai_label_shown,
                 "moderation_status": p.moderation_status,
                 "moderation_reason": p.moderation_reason,
-                "media_moderation_status": p.media_moderation_status,     
+                "media_moderation_status": p.media_moderation_status,
                 "media_moderation_reason": p.media_moderation_reason,
                 "is_hidden": p.is_hidden,
                 "created_at": p.created_at,

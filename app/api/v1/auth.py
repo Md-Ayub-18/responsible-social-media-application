@@ -38,7 +38,7 @@ async def register(payload: UserCreate, db: AsyncSession = Depends(get_db)):
 @router.post("/set-date-of-birth", response_model=SetDateOfBirthResponse)
 async def set_date_of_birth(
     payload: SetDateOfBirthRequest,
-    current_user: User = Depends(get_current_user_allow_inactive), 
+    current_user: User = Depends(get_current_user_allow_inactive),
     db: AsyncSession = Depends(get_db),
 ):
     """Complete registration by setting DOB. Activates the account."""
