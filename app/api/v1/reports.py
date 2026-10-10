@@ -7,11 +7,16 @@ from app.models.user import User
 from app.schemas.trust import ReportCreate, ReportRead, ReportResolve
 from app.services.report_service import ReportService
 
+from fastapi import Request
+from app.core.rate_limit import limiter
+
 router = APIRouter(prefix="/reports", tags=["reports"])
 
 
 @router.post("", response_model=ReportRead, status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/hour")
 async def create_report(
+    request: Request,
     payload: ReportCreate,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),

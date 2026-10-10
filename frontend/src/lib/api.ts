@@ -45,7 +45,17 @@ async function request<T>(
   const text = await resp.text();
   const data = text ? JSON.parse(text) : null;
 
-  if (!resp.ok) {
+   if (!resp.ok) {
+    // Friendly handling for rate limit errors
+    if (resp.status === 429) {
+      const retryAfter = resp.headers.get("retry-after");
+      const secs = retryAfter ? parseInt(retryAfter, 10) : 60;
+      const msg =
+        secs < 60
+          ? `Too many requests. Please wait ${secs} seconds and try again.`
+          : `Too many requests. Please wait ${Math.ceil(secs / 60)} minute(s) and try again.`;
+      throw new ApiError(429, msg);
+    }
     throw new ApiError(resp.status, data?.detail ?? data);
   }
 

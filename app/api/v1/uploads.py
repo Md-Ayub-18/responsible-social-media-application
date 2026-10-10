@@ -7,6 +7,9 @@ from app.config import settings
 from app.dependencies import get_current_user
 from app.models.user import User
 
+from fastapi import Request
+from app.core.rate_limit import limiter
+
 router = APIRouter(prefix="/uploads", tags=["uploads"])
 
 
@@ -16,7 +19,9 @@ ALLOWED = ALLOWED_IMAGE | ALLOWED_VIDEO
 
 
 @router.post("/media", status_code=status.HTTP_201_CREATED)
+@limiter.limit("20/hour")
 async def upload_post_media(
+    request: Request,
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
 ):

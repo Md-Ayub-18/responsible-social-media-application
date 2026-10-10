@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 
 from app.core.age_utils import calculate_age, classify_account, tier_message
+from app.core.rate_limit import limiter
 from app.db.session import get_db
 from app.dependencies import get_current_user, get_current_user_allow_inactive
 from app.models.user import User
@@ -27,16 +29,31 @@ def _user_read_with_tier(user: User) -> UserRead:
     return data
 
 
-@router.post("/register", response_model=TokenWithUser, status_code=status.HTTP_201_CREATED)
-async def register(payload: UserCreate, db: AsyncSession = Depends(get_db)):
+# ---------- register ----------
+@router.post(
+    "/register",
+    response_model=TokenWithUser,
+    status_code=status.HTTP_201_CREATED,
+)
+@limiter.limit("3/hour")
+async def register(
+    request: Request,
+    response: Response,
+    payload: UserCreate,
+    db: AsyncSession = Depends(get_db),
+):
     service = AuthService(db)
     user = await service.register(payload)
     token_data = service.issue_token(user)
     return {**token_data, "user": _user_read_with_tier(user)}
 
 
+# ---------- set DOB (completes registration) ----------
 @router.post("/set-date-of-birth", response_model=SetDateOfBirthResponse)
+@limiter.limit("10/minute")
 async def set_date_of_birth(
+    request: Request,
+    response: Response,
     payload: SetDateOfBirthRequest,
     current_user: User = Depends(get_current_user_allow_inactive),
     db: AsyncSession = Depends(get_db),
@@ -57,21 +74,33 @@ async def set_date_of_birth(
     )
 
 
+# ---------- login ----------
 @router.post("/login", response_model=TokenWithUser)
-async def login(payload: UserLogin, db: AsyncSession = Depends(get_db)):
+@limiter.limit("5/minute")
+async def login(
+    request: Request,
+    response: Response,
+    payload: UserLogin,
+    db: AsyncSession = Depends(get_db),
+):
     service = AuthService(db)
     user = await service.authenticate(payload.email, payload.password)
     token_data = service.issue_token(user)
     return {**token_data, "user": _user_read_with_tier(user)}
 
 
+# ---------- me ----------
 @router.get("/me", response_model=UserRead)
 async def me(current_user: User = Depends(get_current_user_allow_inactive)):
     return _user_read_with_tier(current_user)
 
 
+# ---------- change DOB ----------
 @router.patch("/me/date-of-birth", response_model=SetDateOfBirthResponse)
+@limiter.limit("10/minute")
 async def change_date_of_birth(
+    request: Request,
+    response: Response,
     payload: ChangeDateOfBirthRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
