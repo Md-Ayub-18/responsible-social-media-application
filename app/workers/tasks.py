@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy import select
 
+from pathlib import Path
 from app.db.session import AsyncSessionLocal
 from app.models.bot_signal import BotSignal
 from app.models.post import Post
@@ -20,17 +21,18 @@ def _run_async(coro):
     return asyncio.get_event_loop().run_until_complete(coro)
 
 
-@celery_app.task(name="moderate_post", bind=True, max_retries=2)
-def moderate_post(self, post_id: str):
-    """Run toxicity + AI-detection on a post and update its moderation fields."""
+@celery_app.task(name="moderate_post_media", bind=True, max_retries=2)
+def moderate_post_media(self, post_id: str):
+    """Analyze any image media on a post for NSFW content."""
     try:
-        _run_async(_moderate_post_async(post_id))
+        _run_async(_moderate_post_media_async(post_id))
     except Exception as e:
         raise self.retry(exc=e, countdown=5)
 
 
-async def _moderate_post_async(post_id: str):
-    from app.ml.moderation_pipeline import analyze_text
+async def _moderate_post_media_async(post_id: str):
+    from app.ml.nsfw_detector import classify_image
+    from app.models.post import Post
 
     async with AsyncSessionLocal() as db:
         result = await db.execute(select(Post).where(Post.id == post_id))
@@ -38,18 +40,57 @@ async def _moderate_post_async(post_id: str):
         if not post:
             return {"status": "not_found", "post_id": post_id}
 
-        verdict = analyze_text(post.text)
+        media_urls = post.media_urls or []
+        image_urls = [
+            u for u in media_urls
+            if u.lower().endswith((".jpg", ".jpeg", ".png", ".webp", ".gif"))
+        ]
 
-        post.moderation_status = verdict["status"]
-        post.moderation_reason = verdict["reason"]
-        post.ai_generated = verdict["ai_generated"]
-        post.ai_label_shown = verdict["ai_generated"]
+        if not image_urls:
+            # No images to check — approve immediately
+            post.media_moderation_status = "approved"
+            post.media_moderation_reason = None
+            await db.commit()
+            return {"post_id": post_id, "status": "approved", "reason": "no_images"}
+
+        # Analyze each image (usually 1)
+        worst_case = None  # "approved" | "flagged"
+        reasons = []
+
+        for url in image_urls:
+            # url looks like "/media/posts/abc123.png" → resolve to local file
+            filename = url.rsplit("/", 1)[-1]
+
+            # Determine folder from the URL
+            if "/media/posts/" in url:
+                from app.config import settings
+                file_path = Path(settings.MEDIA_POSTS_DIR) / filename
+            elif "/media/uploads/" in url:
+                from app.config import settings
+                file_path = Path(settings.MEDIA_UPLOADS_DIR) / filename
+            else:
+                continue
+
+            verdict = classify_image(file_path)
+            if verdict["is_nsfw"]:
+                worst_case = "flagged"
+                reasons.append(
+                    f"Image {filename}: NSFW detected (confidence {verdict['confidence']})"
+                )
+
+        if worst_case == "flagged":
+            post.media_moderation_status = "flagged"
+            post.media_moderation_reason = " | ".join(reasons)[:500]
+        else:
+            post.media_moderation_status = "approved"
+            post.media_moderation_reason = None
 
         await db.commit()
+
         return {
             "post_id": post_id,
-            "status": verdict["status"],
-            "reason": verdict["reason"],
+            "status": post.media_moderation_status,
+            "reason": post.media_moderation_reason,
         }
 
 

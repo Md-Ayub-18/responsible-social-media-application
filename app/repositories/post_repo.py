@@ -50,9 +50,7 @@ class PostRepository:
             .where(Post.community_id.is_(None))
         )
 
-        # Visibility filter:
-        #   - approved posts visible to all
-        #   - own flagged posts visible to the author
+                # Visibility filter:
         if for_user_id:
             stmt = stmt.where(
                 or_(
@@ -60,8 +58,17 @@ class PostRepository:
                     Post.author_id == for_user_id,
                 )
             )
+            # Media visibility: flagged media visible only to author
+            stmt = stmt.where(
+                or_(
+                    Post.media_moderation_status.in_(("approved", "pending")),
+                    Post.author_id == for_user_id,
+                )
+            )
         elif not include_flagged:
             stmt = stmt.where(Post.moderation_status == "approved")
+            # Hide flagged/removed media from anonymous viewers
+            stmt = stmt.where(Post.media_moderation_status == "approved")
 
         # Audience filter:
         #   - public posts: visible to all

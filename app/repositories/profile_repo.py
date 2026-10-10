@@ -39,6 +39,7 @@ class ProfileRepository:
             select(Post)
             .where(Post.author_id == user_id)
             .where(Post.is_hidden.is_(False))
+            .where(Post.media_moderation_status != "removed")
             .order_by(Post.created_at.desc())
             .limit(limit)
             .offset(offset)

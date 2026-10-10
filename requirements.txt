@@ -39,3 +39,7 @@ sentencepiece==0.2.0
 httpx==0.28.1
 tenacity==9.0.0
 PyYAML==6.0.2
+
+
+# Audio transcription
+openai-whisper==20231117

@@ -90,23 +90,37 @@ export default function PostCard({ post, onLikeChange }: PostCardProps) {
       </div>
 
       {/* Media (if any) */}
-      {post.media_urls.length > 0 && (
-        <div className="mt-3 bg-black flex items-center justify-center">
-          {isVideoUrl(post.media_urls[0]) ? (
-            <video
-              src={post.media_urls[0]}
-              controls
-              className="w-full max-h-[600px] bg-black"
-            />
-          ) : (
-            <img
-              src={post.media_urls[0]}
-              alt=""
-              className="w-full max-h-[600px] object-contain"
-            />
-          )}
-        </div>
-      )}
+     {post.media_urls.length > 0 && (
+  <>
+    {post.media_moderation_status === "flagged" ? (
+      <div className="mt-3 mx-5 rounded-xl border-2 border-dashed border-red-200 bg-red-50 px-4 py-8 text-center">
+        <div className="text-4xl mb-2">🚩</div>
+        <p className="text-sm font-medium text-red-700">
+          Image hidden — flagged by automated moderation
+        </p>
+        <p className="text-xs text-red-600 mt-1">
+          Reviewers will look at this. You can still see your own post.
+        </p>
+      </div>
+    ) : (
+      <div className="mt-3 bg-black flex items-center justify-center">
+        {isVideoUrl(post.media_urls[0]) ? (
+          <video
+            src={post.media_urls[0]}
+            controls
+            className="w-full max-h-[600px] bg-black"
+          />
+        ) : (
+          <img
+            src={post.media_urls[0]}
+            alt=""
+            className="w-full max-h-[600px] object-contain"
+          />
+        )}
+      </div>
+    )}
+  </>
+)}
 
       <div className="px-5 py-4">
         {/* Text */}
@@ -127,11 +141,11 @@ export default function PostCard({ post, onLikeChange }: PostCardProps) {
                 ✨ AI-generated
               </span>
             )}
-            {post.moderation_status === "pending" && (
-              <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-gray-50 text-gray-600 border border-gray-100">
-                ⏳ Analyzing...
-              </span>
-            )}
+            {post.media_urls.length > 0 && post.media_moderation_status === "pending" && (
+  <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-gray-50 text-gray-600 border border-gray-100">
+    ⏳ Checking media...
+  </span>
+)}
             {post.moderation_status === "flagged" && (
               <span
                 className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-red-50 text-red-700 border border-red-100"

@@ -67,17 +67,19 @@ class PostService:
         )
         post = await self.posts.create(post)
 
-        # Queue background jobs
-        from app.workers.tasks import evaluate_bot, moderate_post
+               # Queue background jobs
+        from app.workers.tasks import evaluate_bot, moderate_post, moderate_post_media
         moderate_post.delay(post.id)
+
+        # NEW: analyze images if any
+        if post.media_urls:
+            moderate_post_media.delay(post.id)
 
         # Throttled bot evaluation
         total_posts = await self.posts.count_all_posts_by_author(author.id)
         recent_posts = await self.posts.count_recent_posts_by_author(author.id, minutes=60)
         if (total_posts % 10 == 0) or (recent_posts > 5):
             evaluate_bot.delay(author.id)
-
-        return post
 
 
 
@@ -186,6 +188,8 @@ class PostService:
                 "ai_label_shown": p.ai_label_shown,
                 "moderation_status": p.moderation_status,
                 "moderation_reason": p.moderation_reason,
+                "media_moderation_status": p.media_moderation_status,     
+                "media_moderation_reason": p.media_moderation_reason,
                 "is_hidden": p.is_hidden,
                 "created_at": p.created_at,
                 "updated_at": p.updated_at,

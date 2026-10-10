@@ -52,6 +52,8 @@ export interface Post {
   ai_label_shown: boolean;
   moderation_status: string;
   moderation_reason: string | null;
+  media_moderation_status: string;         
+  media_moderation_reason: string | null; 
   is_hidden: boolean;
   created_at: string;
   updated_at: string;

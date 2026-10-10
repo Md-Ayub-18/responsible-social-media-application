@@ -41,15 +41,23 @@ class Post(Base, TimestampMixin):
     )
     media_urls: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
 
-    # --- trust & safety fields (populated later by ML pipeline) ---
-    ai_generated: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    ai_label_shown: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-
+    # --- text moderation ---
     # pending | approved | flagged | removed
     moderation_status: Mapped[str] = mapped_column(
         String(20), default="pending", index=True, nullable=False
     )
     moderation_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # --- AI detection ---
+    ai_generated: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    ai_label_shown: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    # --- media (image/video) moderation ---
+    # pending | approved | flagged | removed
+    media_moderation_status: Mapped[str] = mapped_column(
+        String(20), default="pending", index=True, nullable=False
+    )
+    media_moderation_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     is_hidden: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
