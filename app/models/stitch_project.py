@@ -39,6 +39,13 @@ class StitchProject(Base, TimestampMixin):
         cascade="all, delete-orphan",
         order_by="Contribution.created_at.asc()",
     )
+        # Visibility:
+    #   "public"    → anyone can view
+    #   "community" → only members of the associated community can view
+    #   "private"   → only the moderator and approved contributors can view
+    visibility: Mapped[str] = mapped_column(
+        String(20), default="public", nullable=False, index=True
+    )
 
     def __repr__(self) -> str:
         return f"<StitchProject {self.title!r} status={self.status}>"

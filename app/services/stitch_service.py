@@ -20,14 +20,17 @@ class StitchService:
 
     # ---------- projects ----------
     async def create_project(
-        self, moderator: User, title: str, description: str | None, interest_slug: str
+        self,
+        moderator: User,
+        title: str,
+        description: str | None,
+        interest_slug: str,
+        visibility: str = "public",
     ) -> StitchProject:
         interest = await self.interests.get_by_slug(interest_slug)
         if not interest or not interest.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Unknown interest: {interest_slug}",
-            )
+            raise HTTPException(400, f"Unknown interest: {interest_slug}")
+
         project = StitchProject(
             moderator_id=moderator.id,
             title=title,
@@ -35,11 +38,12 @@ class StitchService:
             interest_slug=interest_slug,
             status="open",
             allow_contributions=True,
+            visibility=visibility,
         )
         return await self.repo.create_project(project)
 
     async def get_project_or_404(
-        self, project_id: str, with_contributions: bool = False
+        self, project_id: str, with_contributions: bool = False, as_user: User | None = None
     ) -> StitchProject:
         project = await self.repo.get_project(project_id, with_contributions)
         if not project:
@@ -231,4 +235,45 @@ class StitchService:
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only the project moderator can perform this action",
             )
+    async def _can_view_project(self, user: User, project: StitchProject) -> bool:
+        """Returns True if the user has permission to view this project."""
+        # Public — anyone
+        if project.visibility == "public":
+            return True
+
+        # The moderator always has access
+        if project.moderator_id == user.id:
+            return True
+
+        # Private — only the moderator (already checked) and approved contributors
+        if project.visibility == "private":
+            contributions = await self.repo.list_contributions(project.id)
+            return any(c.contributor_id == user.id for c in contributions)
+
+        # Community — anyone with the same interest OR a member of a community
+        # with that interest
+        if project.visibility == "community":
+            # Check the user's selected interests
+            user_interests = await self.interests.list_user_interests(user.id)
+            if any(i.slug == project.interest_slug for i in user_interests):
+                return True
+
+            # Check community membership with that interest
+            from app.repositories.community_repo import CommunityRepository
+            communities = await CommunityRepository(self.db).list_user_communities(user.id)
+            return any(c.interest_slug == project.interest_slug for c in communities)
+
+        return False
+    
+    async def list_visible_projects(
+        self, user: User, status: str | None, interest_slug: str | None,
+        limit: int, offset: int,
+    ) -> list[StitchProject]:
+        all_projects = await self.repo.list_projects(status, interest_slug, limit, offset)
+        visible = []
+        for p in all_projects:
+            if await self._can_view_project(user, p):
+                visible.append(p)
+        return visible
+
 
