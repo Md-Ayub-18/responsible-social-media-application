@@ -11,6 +11,7 @@ from app.models.reaction import Reaction
 from app.models.report import Report
 from app.models.stitch_project import Contribution, StitchProject
 from app.models.user import User
+from app.models.engagement_signal import EngagementSignal
 
 __all__ = [
     "User",
@@ -29,4 +30,5 @@ __all__ = [
     "CommunityMember",
     "Follow",
     "Block",
+    "EngagementSignal",
 ]

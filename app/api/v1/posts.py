@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Request
 from app.core.rate_limit import limiter
+from fastapi import Response
 
 from app.db.session import get_db
 from app.dependencies import get_current_user
@@ -21,6 +22,7 @@ router = APIRouter(tags=["posts"])
 @limiter.limit("10/minute")
 async def create_post(
     request: Request,
+    response: Response,
     payload: PostCreate,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),

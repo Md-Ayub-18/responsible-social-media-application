@@ -81,3 +81,20 @@ class BotSignalRead(BaseModel):
 class BotSignalWithUser(BotSignalRead):
     username: str | None = None
     display_name: str | None = None
+
+
+class EngagementSignalRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    post_id: str
+    score: float
+    verdict: str
+    reasons: list[str]
+    details: dict
+    created_at: datetime
+
+
+class EngagementSignalWithPost(EngagementSignalRead):
+    post_text: str | None = None
+    post_author_id: str | None = None

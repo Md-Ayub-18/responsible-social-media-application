@@ -196,3 +196,17 @@ async def _moderate_post_media_async(post_id: str):
             "nsfw_reasons": nsfw_reasons,
             "ai_reasons": ai_image_reasons,
         }
+@celery_app.task(name="scan_engagement")
+def scan_engagement(limit: int = 50):
+    """Periodically scan recent posts for manipulated engagement."""
+    try:
+        return _run_async(_scan_engagement_async(limit))
+    except Exception as e:
+        return {"error": str(e)}
+
+
+async def _scan_engagement_async(limit: int):
+    from app.services.engagement_service import EngagementService
+    async with AsyncSessionLocal() as db:
+        count = await EngagementService(db).scan_recent_posts(limit)
+        return {"scanned": count}
